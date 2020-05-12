@@ -36,6 +36,7 @@ namespace Fody
         [Required]
         public ITaskItem[] ReferenceCopyLocalFiles { get; set; } = null!;
         public ITaskItem[] WeaverFiles { get; set; } = null!;
+        public ITaskItem[] PackageReferences { get; set; } = null!;
 
         public string NCrunchOriginalSolutionDirectory { get; set; } = null!;
         public string SolutionDirectory { get; set; } = null!;
@@ -124,14 +125,17 @@ namespace Fody
                     taskItem => new
                     {
                         taskItem.ItemSpec,
-                        ClassNames = GetConfiguredClassNames(taskItem)
+                        ClassNames = GetConfiguredClassNames(taskItem),
+                        PackageReference = GetPackageReference(taskItem)
                     })
                 .SelectMany(entry => entry.ClassNames.Select(
                     className =>
                         new WeaverEntry
                         {
                             AssemblyPath = entry.ItemSpec,
-                            ConfiguredTypeName = className
+                            ConfiguredTypeName = className,
+                            PrivateAssets = entry.PackageReference?.GetMetadata("PrivateAssets"),
+                            IncludeAssets = entry.PackageReference?.GetMetadata("IncludeAssets")
                         }));
         }
 
@@ -142,6 +146,12 @@ namespace Fody
                 .Select(name => name.Trim())
                 .Where(name => !string.IsNullOrEmpty(name))
                 .DefaultIfEmpty();
+        }
+
+        ITaskItem? GetPackageReference(ITaskItem weaverFileItem)
+        {
+            var packageName = Path.GetFileNameWithoutExtension(weaverFileItem.ItemSpec);
+            return PackageReferences?.FirstOrDefault(p => string.Equals(p.ItemSpec, packageName, StringComparison.OrdinalIgnoreCase));
         }
 
         public void Cancel()

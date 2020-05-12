@@ -51,6 +51,7 @@
         DefineConstants="$(DefineConstants)"
         DocumentationFile="@(DocFileItem->'%(FullPath)')"
         WeaverFiles="@(WeaverFiles)"
+        PackageReferences="@(PackageReference)"
         NCrunchOriginalSolutionDirectory="$(NCrunchOriginalSolutionDir)"
         IntermediateCopyLocalFilesCache="$(IntermediateOutputPath)$(MSBuildProjectFile).Fody.CopyLocal.cache"
         GenerateXsd="$(FodyGenerateXsd)"
