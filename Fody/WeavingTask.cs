@@ -76,7 +76,7 @@ namespace Fody
                 SolutionDirectory = SolutionDirectoryFinder.Find(SolutionDirectory, NCrunchOriginalSolutionDirectory, ProjectDirectory),
                 ReferenceCopyLocalPaths = referenceCopyLocalPaths,
                 DefineConstants = defineConstants,
-                Weavers = GetWeaversFromProps().Distinct(WeaverEntry.NameComparer).ToList(),
+                Weavers = GetWeaversFromProps(),
                 GenerateXsd = GenerateXsd
             };
 
@@ -113,11 +113,11 @@ namespace Fody
             return false;
         }
 
-        IEnumerable<WeaverEntry> GetWeaversFromProps()
+        public List<WeaverEntry> GetWeaversFromProps()
         {
             if (WeaverFiles == null)
             {
-                return Array.Empty<WeaverEntry>();
+                return new List<WeaverEntry>();
             }
 
             return WeaverFiles
@@ -136,7 +136,9 @@ namespace Fody
                             ConfiguredTypeName = className,
                             PrivateAssets = entry.PackageReference?.GetMetadata("PrivateAssets"),
                             IncludeAssets = entry.PackageReference?.GetMetadata("IncludeAssets")
-                        }));
+                        }))
+                .Distinct(WeaverEntry.NameComparer)
+                .ToList();
         }
 
         static IEnumerable<string> GetConfiguredClassNames(ITaskItem taskItem)
